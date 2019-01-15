@@ -7,13 +7,7 @@ import json
 import os
 
 slash_app = Flask(__name__)
-spotify_token = util.prompt_for_user_token(os.environ["SPOTIFY_USERNAME"],
-                                           "user-modify-playback-state streaming user-read-playback-state",
-                                           client_id=os.environ["SPOTIFY_CLIENT_ID"],
-                                           client_secret=os.environ["SPOTIFY_CLIENT_SECRET"],
-                                           redirect_uri='http://localhost/')
-
-sp = spotipy.Spotify(auth=spotify_token)
+sp = spotipy.Spotify(auth=os.environ["SPOTIPY_TOKEN"])
 sc = SlackClient(os.environ["SLACK_TOKEN"])
 
 radio_uri = None
@@ -275,4 +269,5 @@ def interactive():
             "text": "Starting {} radio".format(action["name"])
         })
 
-slash_app.run(host="0.0.0.0", port=54322)
+if __name__ == "__main__":
+    slash_app.run(host="0.0.0.0", port=54322)

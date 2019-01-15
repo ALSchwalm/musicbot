@@ -1,0 +1,1 @@
+web: gunicorn run:slash_app --log-file=-
