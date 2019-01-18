@@ -1,14 +1,34 @@
 import spotipy
 import spotipy.util as util
+from spotipy import oauth2
 from flask import Flask, request, jsonify
 from slackclient import SlackClient
 from pprint import pprint
+import threading
+import time
 import json
 import os
 
 slash_app = Flask(__name__)
-sp = spotipy.Spotify(auth=os.environ["SPOTIPY_TOKEN"])
+sp_oauth = oauth2.SpotifyOAuth(client_id=os.environ["SPOTIFY_CLIENT_ID"],
+                               client_secret=os.environ["SPOTIFY_CLIENT_SECRET"],
+                               redirect_uri='http://localhost/',
+                               scope="user-modify-playback-state streaming user-read-playback-state")
+sp = spotipy.Spotify(auth=os.environ["SPOTIFY_ACCESS_TOKEN"])
 sc = SlackClient(os.environ["SLACK_TOKEN"])
+
+refresh_token = os.environ["SPOTIFY_REFRESH_TOKEN"]
+
+def refresh():
+    global sp, refresh_token
+    while True:
+        token_info = sp_oauth.refresh_access_token(refresh_token)
+        print(token_info)
+        refresh_token = token_info["refresh_token"]
+        sp = spotipy.Spotify(auth=token_info['access_token'])
+        time.sleep(60 * 45)
+refresh_thread = threading.Thread(target=refresh)
+refresh_thread.start()
 
 radio_uri = None
 tracks = []
